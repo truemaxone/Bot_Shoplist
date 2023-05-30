@@ -48,10 +48,15 @@ async def share_list_step(message: types.Message, state: FSMContext):
                                      f'\nПроверь ID и попробуй еще раз.')
             else:
                 if current_title not in connected_data:
-                    connected_data[current_title] = [friend_id]
-                    # Оповещения обоим о шеринге
-                    await message.answer(f'✅ Поделился списком "{current_title}" c ID {friend_id}')
-                    await bot.send_message(friend_id, f"ℹ Тебе предоставили доступ к списку {current_title}")
+                    friend_titles = db.db_get_friend_titles(friend_id)
+                    if current_title in friend_titles:
+                        await message.answer(f'⚠ У этого пользователя уже есть список с названием "{current_title}".')
+                        done_flag = False
+                    else:
+                        connected_data[current_title] = [friend_id]
+                        # Оповещения обоим о шеринге
+                        await message.answer(f'✅ Поделился списком "{current_title}" c ID {friend_id}')
+                        await bot.send_message(friend_id, f"ℹ Тебе предоставили доступ к списку {current_title}")
                 else:
                     temp_list = connected_data[current_title].copy()
                     if friend_id not in temp_list:

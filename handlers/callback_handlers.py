@@ -43,9 +43,8 @@ async def callback_inline(call: types.CallbackQuery):
             connected = connections.keys()
             if title in connected:
                 db.db_del_connection(call, title)
-            elif title in owned_titles:
-                owned_titles.remove(title)
-                db.db_update_owned_titles(call, owned_titles)
+            owned_titles.remove(title)
+            db.db_update_owned_titles(call, owned_titles)
         elif call.data == 'delete_list_no':
             await bot.edit_message_text(chat_id=call.message.chat.id, text='Нет так нет...',
                                         message_id=call.message.message_id,

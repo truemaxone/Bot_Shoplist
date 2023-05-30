@@ -144,3 +144,10 @@ class DB:
         with self.connection:
             self.cur.execute(""" UPDATE products_data SET owned_lists = %s WHERE user_id = %s""",
                              (owned_titles, message.from_user.id,))
+
+    def db_get_friend_titles(self, friend_id):
+        with self.connection:
+            self.cur.execute(""" SELECT list_of_lists FROM products_data WHERE user_id = %s""",
+                             (friend_id,))
+            friend_titles = self.cur.fetchone()[0].keys()
+            return friend_titles
