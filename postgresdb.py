@@ -154,3 +154,9 @@ class DB:
                              (friend_id,))
             friend_titles = self.cur.fetchone()[0].keys()
             return friend_titles
+
+    def db_get_name_by_id(self, user_id):
+        with self.connection:
+            self.cur.execute(""" SELECT user_name FROM products_data WHERE user_id = %s """, (user_id,))
+            user_name = self.cur.fetchone()[0]
+            return user_name

@@ -112,12 +112,14 @@ async def callback_inline(call: types.CallbackQuery):
                     db.db_update_connected(call, dict_lop, current_title)
                     users = connections[current_title]
                     for user in users:
-                        await bot.send_message(user, f'⚠ Удалил из общего списка "{current_title}" {temp}.')
+                        await bot.send_message(user, f'⚠ Пользователь {db.db_get_name_by_id(call.from_user.id)} удалил '
+                                                     f'*{temp}* из общего списка "{current_title}".',
+                                                     parse_mode='Markdown')
                 else:
                     db.db_update(call, dict_of_lists)
                 # show alert
                 await bot.answer_callback_query(callback_query_id=call.id, show_alert=False,
-                                                text=f'✅ Удалил {temp} из списка.')
+                                                text=f'✅ Удалил *{temp}* из списка.')
             else:
                 await call.message.answer("ℹ Список пуст.")
 

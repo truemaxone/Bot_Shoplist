@@ -59,19 +59,24 @@ async def share_list_step(message: types.Message, state: FSMContext):
                     else:
                         connected_data[current_title] = [friend_id]
                         # Оповещения обоим о шеринге
-                        await message.answer(f'✅ Поделился списком "{current_title}" c ID {friend_id}')
-                        await bot.send_message(friend_id, f"ℹ Тебе предоставили доступ к списку {current_title}")
+                        await message.answer(f'✅ Поделился списком "{current_title}" c пользователем '
+                                             f'{db.db_get_name_by_id(friend_id)} (ID: {friend_id})')
+                        await bot.send_message(friend_id, f'ℹ Пользователь {db.db_get_name_by_id(message.from_user.id)}'
+                                                          f' предоставил тебе доступ к списку "{current_title}"')
                 else:
                     temp_list = connected_data[current_title].copy()
                     if friend_id not in temp_list:
                         temp_list.append(friend_id)
                         connected_data[current_title] = temp_list
                         # Оповещения обоим о шеринге
-                        await message.answer(f'✅ Поделился списком "{current_title}" c ID {friend_id}')
-                        await bot.send_message(friend_id, f"ℹ Тебе предоставили доступ к списку {current_title}")
+                        await message.answer(f'✅ Поделился списком "{current_title}" c пользователем '
+                                             f'{db.db_get_name_by_id(friend_id)} (ID: {friend_id})')
+                        await bot.send_message(friend_id, f'ℹ Пользователь {db.db_get_name_by_id(message.from_user.id)}'
+                                                          f' предоставил тебе доступ к списку "{current_title}"')
                     else:
                         done_flag = False
-                        await message.answer(f'ℹ Ты уже поделился списком "{current_title}" c ID {friend_id}')
+                        await message.answer(f'ℹ Ты уже поделился списком "{current_title}" c пользователем '
+                                             f'{db.db_get_name_by_id(friend_id)} (ID: {friend_id})')
                 if done_flag:
                     db.db_add_connection(message, connected_data, current_title)
         except ValueError:
@@ -138,9 +143,12 @@ async def product_proc(message, dict_of_lists, products, connected=False):
         for user in users:
             if bag:
                 if len(bag) == 1:
-                    await bot.send_message(user, f'✅ Занес {bag[0]} в общий список "{current_title}".')
+                    await bot.send_message(user, f'✅ Пользователь {db.db_get_name_by_id(message.from_user.id)} добавил '
+                                                 f'*{bag[0]}* в общий список "{current_title}".', parse_mode='Markdown')
                 else:
-                    await bot.send_message(user, f'✅ {", ".join(bag)}  - все занес в общий список "{current_title}".')
+                    await bot.send_message(user, f'✅ Пользователь {db.db_get_name_by_id(message.from_user.username)} '
+                                                 f'добавил *{", ".join(bag)}* в общий список "{current_title}".',
+                                                 parse_mode='Markdown')
     if bag:
         if len(bag) == 1:
             await message.answer(f"✅ Занес {bag[0]} в список.")
