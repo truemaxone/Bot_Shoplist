@@ -46,6 +46,10 @@ async def share_list_step(message: types.Message, state: FSMContext):
             if friend_id not in users:
                 await message.answer(f'⚠ Пользователя с ID {friend_id} нет в моей базе.'
                                      f'\nПроверь ID и попробуй еще раз.')
+            elif friend_id == message.from_user.id:
+                await message.answer(f'⚠ Был введен собственный ID.\nНапиши ID того с кем хочешь поделиться списком.'
+                                     f'\nНапоминаю, что этот человек может узнать свой ID с помощью команды /get_my_id.'
+                                     f'\n⚠ Списком можно поделиться только с моими подписчиками.')
             else:
                 if current_title not in connected_data:
                     friend_titles = db.db_get_friend_titles(friend_id)

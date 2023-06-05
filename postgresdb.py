@@ -77,13 +77,16 @@ class DB:
         with self.connection:
             self.cur.execute(""" UPDATE products_data SET connected = %s WHERE user_id = %s """,
                              (json.dumps(data), message.from_user.id))
+
             users = data[current_title]
             for user in users:
+                self.cur.execute(""" SELECT connected FROM products_data WHERE user_id = %s""", (user,))
+                user_connected_data = self.cur.fetchone()[0]
                 temp = users.copy() + [message.from_user.id]
                 temp.remove(user)
-                data[current_title] = temp
+                user_connected_data[current_title] = temp
                 self.cur.execute(""" UPDATE products_data SET connected = %s WHERE user_id = %s """,
-                                 (json.dumps(data), user))
+                                 (json.dumps(user_connected_data), user))
 
                 self.cur.execute(""" SELECT list_of_lists FROM products_data WHERE user_id = %s""",
                                  (user,))
