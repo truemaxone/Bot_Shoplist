@@ -126,7 +126,7 @@ async def product_proc(message, dict_of_lists, products, connected=False):
     bag = []  # для вывода нескольких добавленных в список продуктов в сообщении
     for product in products:
         if product.lower() in lop_for_checking:
-            await message.answer(f"ℹ {product} уже есть в списке.")
+            await message.answer(f"ℹ *{product}* уже есть в списке.", parse_mode='Markdown')
         else:
             if current_dict.keys():
                 new_id = str(int(list(current_dict.keys())[-1]) + 1)
@@ -151,9 +151,9 @@ async def product_proc(message, dict_of_lists, products, connected=False):
                                                  parse_mode='Markdown')
     if bag:
         if len(bag) == 1:
-            await message.answer(f"✅ Занес {bag[0]} в список.")
+            await message.answer(f"✅ Занес *{bag[0]}* в список.", parse_mode='Markdown')
         else:
-            await message.answer(f"✅ {', '.join(bag)}  - все занес в список.")
+            await message.answer(f"✅ *{', '.join(bag)}*  - все занес в список.", parse_mode='Markdown')
 
 
 # Обработка сообщения со списком продуктов
