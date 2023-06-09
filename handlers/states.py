@@ -146,7 +146,7 @@ async def product_proc(message, dict_of_lists, products, connected=False):
                     await bot.send_message(user, f'✅ Пользователь {db.db_get_name_by_id(message.from_user.id)} добавил '
                                                  f'*{bag[0]}* в общий список "{current_title}".', parse_mode='Markdown')
                 else:
-                    await bot.send_message(user, f'✅ Пользователь {db.db_get_name_by_id(message.from_user.username)} '
+                    await bot.send_message(user, f'✅ Пользователь {db.db_get_name_by_id(message.from_user.id)} '
                                                  f'добавил *{", ".join(bag)}* в общий список "{current_title}".',
                                                  parse_mode='Markdown')
     if bag:

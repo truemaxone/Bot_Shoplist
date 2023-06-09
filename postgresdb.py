@@ -158,5 +158,8 @@ class DB:
     def db_get_name_by_id(self, user_id):
         with self.connection:
             self.cur.execute(""" SELECT user_name FROM products_data WHERE user_id = %s """, (user_id,))
-            user_name = self.cur.fetchone()[0]
+            try:
+                user_name = self.cur.fetchone()[0]
+            except TypeError:
+                user_name = f'Пользователь {user_id}'
             return user_name
