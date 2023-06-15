@@ -117,9 +117,7 @@ async def callback_inline(call: types.CallbackQuery):
                                                      parse_mode='Markdown')
                 else:
                     db.db_update(call, dict_of_lists)
-                # show alert
-                await bot.answer_callback_query(callback_query_id=call.id, show_alert=False,
-                                                text=f'✅ Удалил *{temp}* из списка.')
+                await call.message.answer(f'✅ Удалил *{temp}* из списка.', parse_mode='Markdown')
             else:
                 await call.message.answer("ℹ Список пуст.")
 
