@@ -163,3 +163,9 @@ class DB:
             except TypeError:
                 user_name = f'Пользователь {user_id}'
             return user_name
+
+    def db_check_existence(self, message):
+        with self.connection:
+            self.cur.execute(""" SELECT user_id FROM products_data""", (message.from_user.id,))
+            users = [user[0] for user in self.cur.fetchall()]
+            return message.from_user.id in users

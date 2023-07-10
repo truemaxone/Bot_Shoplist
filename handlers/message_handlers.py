@@ -24,20 +24,26 @@ async def welcome(message: types.Message):
 
 @dp.message_handler(commands=['stop'])
 async def goodbye(message: types.Message):
-    user_id = message.from_user.id
-    user_name = message.from_user.first_name
-    await message.answer(f"Было приятно помогать тебе {user_name}."
-                         f"\nСпасибо за доверие. Если тебе когда-нибудь снова понадобиться моя помощь, ты знаешь, "
-                         f"где меня найти..."
-                         f"\nВсего доброго.👋🏼")
+    if db.db_check_existence(message):
+        user_id = message.from_user.id
+        user_name = message.from_user.first_name
+        await message.answer(f"Было приятно помогать тебе {user_name}."
+                             f"\nСпасибо за доверие. Если тебе когда-нибудь снова понадобиться моя помощь, ты знаешь, "
+                             f"где меня найти..."
+                             f"\nВсего доброго.👋🏼")
 
-    db.db_delete_user(user_id)
+        db.db_delete_user(user_id)
+    else:
+        await message.answer("🫧 Извини, но ты еще не зарегистрировался. Чтобы начать работу со мной введи /start")
 
 
 @dp.message_handler(commands=['show_buttons'])
 async def get_buttons(message: types.Message):
-    keyboard = keyboards.get_main_kb()
-    await message.answer('Лови клавиатуру ⌨', reply_markup=keyboard)
+    if db.db_check_existence(message):
+        keyboard = keyboards.get_main_kb()
+        await message.answer('Лови клавиатуру ⌨', reply_markup=keyboard)
+    else:
+        await message.answer("🫧 Извини, но ты еще не зарегистрировался. Чтобы начать работу со мной введи /start")
 
 
 @dp.message_handler(commands=['get_my_id'])
@@ -61,53 +67,72 @@ async def help_message(message: types.Message):
 
 @dp.message_handler(commands=['add_list'])
 async def add_list(message: types.Message):
-    await message.answer("Как назовем новый список?")
-    await AdditionalStep.add_list_next_message.set()
+    if db.db_check_existence(message):
+        await message.answer("Как назовем новый список?")
+        await AdditionalStep.add_list_next_message.set()
+    else:
+        await message.answer("🫧 Извини, но ты еще не зарегистрировался. Чтобы начать работу со мной введи /start")
 
 
 @dp.message_handler(commands=['add_product'])
 async def add_product(message: types.Message):
-    dict_of_lists = db.db_recourse(message)
-    list_of_titles = list(dict_of_lists.keys())
-    if list_of_titles:
-        keyboard = keyboards.get_inline_add_kb(list_of_titles)
-        await message.answer('В какой список занести продукты?', reply_markup=keyboard)
+    if db.db_check_existence(message):
+        dict_of_lists = db.db_recourse(message)
+        list_of_titles = list(dict_of_lists.keys())
+        if list_of_titles:
+            keyboard = keyboards.get_inline_add_kb(list_of_titles)
+            await message.answer('В какой список занести продукты?', reply_markup=keyboard)
+        else:
+            await message.answer("🫧 Извини, но у тебя еще нет ни одного списка. Сначала необходимо создать хотя бы "
+                                 "один.")
     else:
-        await message.answer("🫧 Извини, но у тебя еще нет ни одного списка. Сначала необходимо создать хотя бы один.")
+        await message.answer("🫧 Извини, но ты еще не зарегистрировался. Чтобы начать работу со мной введи /start")
 
 
 @dp.message_handler(commands=['show_lists'])
 async def show_lists_of_products(message: types.Message):
-    dict_of_lists = db.db_recourse(message)
-    list_of_titles = list(dict_of_lists.keys())
-    if list_of_titles:
-        keyboard = keyboards.get_inline_lists_kb(list_of_titles, message)
-        await message.answer('Ниже перечень всех твоих списков.\nДля просмотра нажми на нужный.',
-                             reply_markup=keyboard)
+    if db.db_check_existence(message):
+        dict_of_lists = db.db_recourse(message)
+        list_of_titles = list(dict_of_lists.keys())
+        if list_of_titles:
+            keyboard = keyboards.get_inline_lists_kb(list_of_titles, message)
+            await message.answer('Ниже перечень всех твоих списков.\nДля просмотра нажми на нужный.',
+                                 reply_markup=keyboard)
+        else:
+            await message.answer("🫧 Извини, но у тебя еще нет ни одного списка. Сначала необходимо создать хотя бы "
+                                 "один.")
     else:
-        await message.answer("🫧 Извини, но у тебя еще нет ни одного списка. Сначала необходимо создать хотя бы один.")
+        await message.answer("🫧 Извини, но ты еще не зарегистрировался. Чтобы начать работу со мной введи /start")
 
 
 @dp.message_handler(commands=['delete_list'])
 async def delete_full_list(message: types.Message):
-    dict_of_lists = db.db_recourse(message)
-    list_of_titles = list(dict_of_lists.keys())
-    if list_of_titles:
-        keyboard = keyboards.del_inline_lists_kb(list_of_titles)
-        await message.answer('Выбери список, который мне нужно удалить:', reply_markup=keyboard)
+    if db.db_check_existence(message):
+        dict_of_lists = db.db_recourse(message)
+        list_of_titles = list(dict_of_lists.keys())
+        if list_of_titles:
+            keyboard = keyboards.del_inline_lists_kb(list_of_titles)
+            await message.answer('Выбери список, который мне нужно удалить:', reply_markup=keyboard)
+        else:
+            await message.answer("🫧 Извини, но у тебя еще нет ни одного списка. Сначала необходимо создать хотя бы "
+                                 "один.")
     else:
-        await message.answer("🫧 Извини, но у тебя еще нет ни одного списка. Сначала необходимо создать хотя бы один.")
+        await message.answer("🫧 Извини, но ты еще не зарегистрировался. Чтобы начать работу со мной введи /start")
 
 
 @dp.message_handler(commands=['share_list'])
 async def share_list(message: types.Message):
-    dict_of_lists = db.db_recourse(message)
-    list_of_titles = list(dict_of_lists.keys())
-    if list_of_titles:
-        keyboard = keyboards.share_inline_lists_kb(list_of_titles)
-        await message.answer('Выбери список, которым хочешь поделиться:', reply_markup=keyboard)
+    if db.db_check_existence(message):
+        dict_of_lists = db.db_recourse(message)
+        list_of_titles = list(dict_of_lists.keys())
+        if list_of_titles:
+            keyboard = keyboards.share_inline_lists_kb(list_of_titles)
+            await message.answer('Выбери список, которым хочешь поделиться:', reply_markup=keyboard)
+        else:
+            await message.answer("🫧 Извини, но у тебя еще нет ни одного списка. Сначала необходимо создать хотя бы "
+                                 "один.")
     else:
-        await message.answer("🫧 Извини, но у тебя еще нет ни одного списка. Сначала необходимо создать хотя бы один.")
+        await message.answer("🫧 Извини, но ты еще не зарегистрировался. Чтобы начать работу со мной введи /start")
 
 
 @dp.message_handler(content_types=['text'])
