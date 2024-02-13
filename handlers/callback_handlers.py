@@ -54,11 +54,22 @@ async def callback_inline(call: types.CallbackQuery):
             list_id = int(call.data.replace('open_list ', ''))
             db.db_update_current_list_id(call, list_id)
             dict_lop = dict_of_lists[list_of_titles[list_id]]
+            list_of_msgs = split_message(dict_lop)
             if dict_lop:
                 keyboard = keyboards.get_show_kb()
-                await bot.edit_message_text((f'Ниже список товаров из списка "{list_of_titles[list_id]}":\n\n' +
-                                             line_print(dict_lop)), call.message.chat.id, call.message.message_id,
-                                            reply_markup=keyboard)
+                if len(list_of_msgs) < 2:
+                    await bot.edit_message_text((f'Ниже список товаров из списка "{list_of_titles[list_id]}":\n\n' +
+                                                 line_print(dict_lop)), call.message.chat.id, call.message.message_id,
+                                                reply_markup=keyboard)
+                else:
+                    await bot.edit_message_text((f'Ниже список товаров из списка "{list_of_titles[list_id]}":\n\n' +
+                                                 ''.join(list_of_msgs[0])), call.message.chat.id, call.message.message_id,
+                                                reply_markup=keyboard)
+                    for msg in list_of_msgs[1:]:
+                        await bot.send_message(call.message.chat.id, (f'Ниже продолжение списка товаров из списка '
+                                                                      f'"{list_of_titles[list_id]}":\n\n' +
+                                                                      ''.join(msg)), reply_markup=keyboard)
+
             else:
                 await call.message.answer("ℹ Список пуст.")
 
@@ -134,3 +145,18 @@ def line_print(dict_lop):
     for i, item in enumerate(dict_lop.values()):
         new_line += (str(int(i) + 1) + ') ' + item + '\n')
     return new_line
+
+
+# Разбивка длинных сообщений
+def split_message(dict_lop):
+    messages = []
+    for i, item in enumerate(dict_lop.values()):
+        message_part = (str(int(i) + 1) + ') ' + item + '\n')
+        if messages:
+            if (len(''.join(messages[-1])) + len(message_part)) < 4096:
+                messages[-1].append(message_part)
+            else:
+                messages.append([message_part])
+        else:
+            messages.append([message_part])
+    return messages
