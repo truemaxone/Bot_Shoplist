@@ -16,7 +16,7 @@ async def additional_list(message: types.Message, state: FSMContext):
         lot_for_checking = [lst.lower() for lst in list_of_titles]
         # Проверка на случайное нажатие кнопок бота
         if message.text in ['Показать списки', 'Добавить список', 'Добавить продукты', 'Удалить список',
-                            'Поделиться списком']:
+                            'Поделиться списком', '/help', '/show_buttons', '/get_my_id', '/stop']:
             await message.answer('Похоже была нажата кнопка для общения со мной, попробуй еще раз...')
 
         elif message.text.strip().lower() in lot_for_checking:
@@ -92,7 +92,7 @@ async def adding_product(message: types.Message, state: FSMContext):
         data['add_next_message'] = message.text
         # Проверка на случайное нажатие кнопок бота
         if message.text in ['Показать списки', 'Добавить список', 'Добавить продукты', 'Удалить список',
-                            'Поделиться списком']:
+                            'Поделиться списком', '/help', '/show_buttons', '/get_my_id', '/stop']:
             await message.answer('Похоже была нажата кнопка для общения со мной, попробуй еще раз...')
         else:
             products = message_proc(message)
@@ -108,7 +108,7 @@ async def adding_product_connected(message: types.Message, state: FSMContext):
         data['add_next_connected_message'] = message.text
         # Проверка на случайное нажатие кнопок бота
         if message.text in ['Показать списки', 'Добавить список', 'Добавить продукты', 'Удалить список',
-                            'Поделиться списком']:
+                            'Поделиться списком', '/help', '/show_buttons', '/get_my_id', '/stop']:
             await message.answer('Похоже была нажата кнопка для общения со мной, попробуй еще раз...')
         else:
             products = message_proc(message)

@@ -66,7 +66,7 @@ async def callback_inline(call: types.CallbackQuery):
                                                  ''.join(list_of_msgs[0])), call.message.chat.id, call.message.message_id,
                                                 reply_markup=keyboard)
                     for msg in list_of_msgs[1:]:
-                        await bot.send_message(call.message.chat.id, (f'Ниже продолжение списка товаров из списка '
+                        await bot.send_message(call.message.chat.id, (f'Продолжение списка товаров из списка '
                                                                       f'"{list_of_titles[list_id]}":\n\n' +
                                                                       ''.join(msg)), reply_markup=keyboard)
 
@@ -83,7 +83,7 @@ async def callback_inline(call: types.CallbackQuery):
                 await AdditionalStep.add_next_connected_message.set()
                 await bot.edit_message_text(chat_id=call.message.chat.id,
                                             text=f'Был выбран список "{title_to_update}".\n'
-                                                 f'Это *общий* список на {len(connections) + 1} человек, включая '
+                                                 f'Это *общий* список на {len(connections)} человек, включая '
                                                  f'тебя.\nТеперь напиши названия продуктов через запятую или enter, '
                                                  f'или через запятую и интер, пиши как тебе проще, я все пойму.',
                                             message_id=call.message.message_id, parse_mode='Markdown',
@@ -153,7 +153,7 @@ def split_message(dict_lop):
     for i, item in enumerate(dict_lop.values()):
         message_part = (str(int(i) + 1) + ') ' + item + '\n')
         if messages:
-            if (len(''.join(messages[-1])) + len(message_part)) < 4096:
+            if (len(''.join(messages[-1])) + len(message_part)) < 4000:
                 messages[-1].append(message_part)
             else:
                 messages.append([message_part])
