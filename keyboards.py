@@ -1,3 +1,5 @@
+import config
+
 from aiogram import types
 from bot import db
 
@@ -10,6 +12,11 @@ def get_main_kb():
     btn4 = types.KeyboardButton("Удалить список")
     btn5 = types.KeyboardButton("Поделиться списком")
     keyboard.add(btn1, btn2, btn3, btn4, btn5)
+    return keyboard
+
+
+def get_show_simple_kb():
+    keyboard = types.InlineKeyboardMarkup(row_width=2)
     return keyboard
 
 
@@ -43,43 +50,54 @@ def get_inline_lists_kb(list_of_titles, message):
     return keyboard
 
 
-def del_inline_lists_kb(list_of_titles):
+def manage_inline_lists_kb(list_of_titles, callback_data):
     keyboard = types.InlineKeyboardMarkup(row_width=1)
     btns = []
+    print(callback_data)
     for list_id, lst in enumerate(list_of_titles):
-        btn = types.InlineKeyboardButton(text=f'🗑 {lst}', callback_data=f'delete_list {list_id}')
+        if callback_data == 'delete_list':
+            text = f'🗑 {lst}'
+        elif callback_data == 'share_list':
+            text = f'📤 {lst}'
+        elif callback_data == 'add_to_list':
+            text = f'➡ {lst}'
+        else:
+            continue
+        btn = types.InlineKeyboardButton(text=text, callback_data=f'{callback_data} {list_id}')
         btns.append(btn)
+
     keyboard.add(*btns)
     return keyboard
 
 
-def share_inline_lists_kb(list_of_titles):
-    keyboard = types.InlineKeyboardMarkup(row_width=1)
+def get_inline_del_kb(dict_lop, message):
+    keyboard = types.InlineKeyboardMarkup(row_width=2)
     btns = []
-    for list_id, lst in enumerate(list_of_titles):
-        btn = types.InlineKeyboardButton(text=f'📤 {lst}', callback_data=f'share_list {list_id}')
-        btns.append(btn)
+    page_limit = len(dict_lop) // config.ITEMS_PER_PAGE + 1
+    cur_page = db.db_get_current_page(message)
+    if len(dict_lop) < config.ITEMS_PER_PAGE + 1:
+        for product_id, product in dict_lop.items():
+            btn = types.InlineKeyboardButton(text=f'✖ {product}', callback_data=f'delete_product {product_id}')
+            btns.append(btn)
+    else:
+        splitted_dict = dict(list(dict_lop.items())[(cur_page - 1)
+                                                    * config.ITEMS_PER_PAGE:config.ITEMS_PER_PAGE * cur_page])
+        for product_id, product in splitted_dict.items():
+            btn = types.InlineKeyboardButton(text=f'✖ {product}', callback_data=f'delete_product {product_id}')
+            btns.append(btn)
+
     keyboard.add(*btns)
-    return keyboard
 
+    if len(dict_lop) > 25:
+        btn0 = types.InlineKeyboardButton(text='◀ предыдущая', callback_data='prev_page')
+        btn1 = types.InlineKeyboardButton(text='следующая ▶', callback_data='next_page')
+        if cur_page == 1:
+            keyboard.add(btn1)
+        elif cur_page == page_limit:
+            keyboard.add(btn0)
+        else:
+            keyboard.add(btn0, btn1)
 
-def get_inline_del_kb(dict_lop):
-    keyboard = types.InlineKeyboardMarkup(row_width=1)
-    btns = []
-    for product_id, product in dict_lop.items():
-        btn = types.InlineKeyboardButton(text=f'✖ {product}', callback_data=f'delete_product {product_id}')
-        btns.append(btn)
-    btn1 = types.InlineKeyboardButton(text='⬅', callback_data='back')
-    keyboard.add(*btns)
-    keyboard.add(btn1)
-    return keyboard
-
-
-def get_inline_add_kb(list_of_titles):
-    keyboard = types.InlineKeyboardMarkup(row_width=1)
-    btns = []
-    for list_id, lst in enumerate(list_of_titles):
-        btn = types.InlineKeyboardButton(text=f'➡ {lst}', callback_data=f'add_to_list {list_id}')
-        btns.append(btn)
-    keyboard.add(*btns)
+    btn2 = types.InlineKeyboardButton(text='⬅', callback_data='back_to_list')
+    keyboard.add(btn2)
     return keyboard

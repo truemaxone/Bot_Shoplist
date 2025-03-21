@@ -73,6 +73,18 @@ class DB:
             current_list_id = self.cur.fetchone()[0]
             return current_list_id
 
+    def db_update_current_page(self, message, current_page):
+        with self.connection:
+            self.cur.execute(""" UPDATE products_data SET current_page = %s WHERE user_id = %s """,
+                             (current_page, message.from_user.id))
+
+    def db_get_current_page(self, message):
+        with self.connection:
+            self.cur.execute(""" SELECT current_page FROM products_data WHERE user_id = %s""",
+                             (message.from_user.id,))
+            current_page = self.cur.fetchone()[0]
+            return current_page
+
     def db_add_connection(self, message, data, current_title):
         with self.connection:
             self.cur.execute(""" UPDATE products_data SET connected = %s WHERE user_id = %s """,

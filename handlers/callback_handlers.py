@@ -12,18 +12,33 @@ async def callback_inline(call: types.CallbackQuery):
     owned_titles = db.db_get_owned_titles(call)
 
     if call.message and dict_of_lists and list_of_titles:
+
         if call.data == 'delete':
+            db.db_update_current_page(call, 1)
             temp = call.message.text.split(':')[0]
             title = temp[temp.index('"') + 1: temp.rindex('"')]
             current_dict = dict_of_lists[title]
-            keyboard = keyboards.get_inline_del_kb(current_dict)
-            await bot.edit_message_text('Что удалить из списка?', call.message.chat.id,
+            keyboard = keyboards.get_inline_del_kb(current_dict, call)
+            await bot.edit_message_text(f'Что удалить из списка "{title}"?', call.message.chat.id,
                                         call.message.message_id, reply_markup=keyboard)
 
         elif call.data == 'back':
             keyboard = keyboards.get_inline_lists_kb(list_of_titles, call)
             await bot.edit_message_text('Ниже перечень всех твоих списков:\nДля просмотра нажми на нужный.',
                                         call.message.chat.id, call.message.message_id, reply_markup=keyboard)
+
+        elif call.data == 'next_page' or call.data == 'prev_page':
+            cur_page = db.db_get_current_page(call)
+            if call.data == 'next_page':
+                cur_page += 1
+            else:
+                cur_page -= 1
+            db.db_update_current_page(call, cur_page)
+            title = call.message.text.split('"')[1]
+            current_dict = dict_of_lists[title]
+            keyboard = keyboards.get_inline_del_kb(current_dict, call)
+            await bot.edit_message_text(f'Страница {cur_page} списка "{title}"', call.message.chat.id,
+                                        call.message.message_id, reply_markup=keyboard)
 
         elif 'delete_list ' in call.data:
             list_id = int(call.data.replace('delete_list ', ''))
@@ -45,18 +60,23 @@ async def callback_inline(call: types.CallbackQuery):
                 db.db_del_connection(call, title)
             owned_titles.remove(title)
             db.db_update_owned_titles(call, owned_titles)
+
         elif call.data == 'delete_list_no':
             await bot.edit_message_text(chat_id=call.message.chat.id, text='Нет так нет...',
                                         message_id=call.message.message_id,
                                         reply_markup=None)
 
-        elif 'open_list' in call.data:
-            list_id = int(call.data.replace('open_list ', ''))
+        elif 'open_list' in call.data or call.data == 'back_to_list':
+            if 'open_list' in call.data:
+                list_id = int(call.data.replace('open_list ', ''))
+            else:
+                list_id = db.db_get_current_list_id(call)
             db.db_update_current_list_id(call, list_id)
             dict_lop = dict_of_lists[list_of_titles[list_id]]
             list_of_msgs = split_message(dict_lop)
             if dict_lop:
                 keyboard = keyboards.get_show_kb()
+                simple_keyboard = keyboards.get_show_simple_kb()
                 if len(list_of_msgs) < 2:
                     await bot.edit_message_text((f'Ниже список товаров из списка "{list_of_titles[list_id]}":\n\n' +
                                                  line_print(dict_lop)), call.message.chat.id, call.message.message_id,
@@ -64,12 +84,11 @@ async def callback_inline(call: types.CallbackQuery):
                 else:
                     await bot.edit_message_text((f'Ниже список товаров из списка "{list_of_titles[list_id]}":\n\n' +
                                                  ''.join(list_of_msgs[0])), call.message.chat.id, call.message.message_id,
-                                                reply_markup=keyboard)
+                                                reply_markup=simple_keyboard)
                     for msg in list_of_msgs[1:]:
                         await bot.send_message(call.message.chat.id, (f'Продолжение списка товаров из списка '
                                                                       f'"{list_of_titles[list_id]}":\n\n' +
                                                                       ''.join(msg)), reply_markup=keyboard)
-
             else:
                 await call.message.answer("ℹ Список пуст.")
 
@@ -132,7 +151,7 @@ async def callback_inline(call: types.CallbackQuery):
             else:
                 await call.message.answer("ℹ Список пуст.")
 
-            keyboard = keyboards.get_inline_del_kb(dict_lop)
+            keyboard = keyboards.get_inline_del_kb(dict_lop, call)
             await bot.edit_message_reply_markup(call.message.chat.id, call.message.message_id,
                                                 reply_markup=keyboard)
     else:

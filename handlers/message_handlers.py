@@ -55,8 +55,7 @@ async def get_id(message: types.Message):
 @dp.message_handler(commands=['help'])
 async def help_message(message: types.Message):
     await message.answer("Ниже небольшое INFO по командам:"
-                         "\n\n📋 /show_lists - показать перечень списков"
-                         "\n⌨ /show_buttons - показать кнопки для общения со мной, если пропали."
+                         "\n\n⌨ /show_buttons - показать кнопки для общения со мной, если пропали."
                          "\n🆘 /help - справочная информация"
                          "\n🆔 /get_my_id - выведет твой id"
                          "\n⛔ /stop - отписаться от бота"
@@ -74,60 +73,26 @@ async def add_list(message: types.Message):
         await message.answer("🫧 Извини, но ты еще не зарегистрировался. Чтобы начать работу со мной введи /start")
 
 
-@dp.message_handler(commands=['add_product'])
-async def add_product(message: types.Message):
+@dp.message_handler(commands=['add_product', 'show_lists', 'delete_list', 'share_list'])
+async def manage_lists(message: types.Message):
+    command = message.text
     if db.db_check_existence(message):
         dict_of_lists = db.db_recourse(message)
         list_of_titles = list(dict_of_lists.keys())
         if list_of_titles:
-            keyboard = keyboards.get_inline_add_kb(list_of_titles)
-            await message.answer('В какой список занести продукты?', reply_markup=keyboard)
-        else:
-            await message.answer("🫧 Извини, но у тебя еще нет ни одного списка. Сначала необходимо создать хотя бы "
-                                 "один.")
-    else:
-        await message.answer("🫧 Извини, но ты еще не зарегистрировался. Чтобы начать работу со мной введи /start")
-
-
-@dp.message_handler(commands=['show_lists'])
-async def show_lists_of_products(message: types.Message):
-    if db.db_check_existence(message):
-        dict_of_lists = db.db_recourse(message)
-        list_of_titles = list(dict_of_lists.keys())
-        if list_of_titles:
-            keyboard = keyboards.get_inline_lists_kb(list_of_titles, message)
-            await message.answer('Ниже перечень всех твоих списков.\nДля просмотра нажми на нужный.',
-                                 reply_markup=keyboard)
-        else:
-            await message.answer("🫧 Извини, но у тебя еще нет ни одного списка. Сначала необходимо создать хотя бы "
-                                 "один.")
-    else:
-        await message.answer("🫧 Извини, но ты еще не зарегистрировался. Чтобы начать работу со мной введи /start")
-
-
-@dp.message_handler(commands=['delete_list'])
-async def delete_full_list(message: types.Message):
-    if db.db_check_existence(message):
-        dict_of_lists = db.db_recourse(message)
-        list_of_titles = list(dict_of_lists.keys())
-        if list_of_titles:
-            keyboard = keyboards.del_inline_lists_kb(list_of_titles)
-            await message.answer('Выбери список, который мне нужно удалить:', reply_markup=keyboard)
-        else:
-            await message.answer("🫧 Извини, но у тебя еще нет ни одного списка. Сначала необходимо создать хотя бы "
-                                 "один.")
-    else:
-        await message.answer("🫧 Извини, но ты еще не зарегистрировался. Чтобы начать работу со мной введи /start")
-
-
-@dp.message_handler(commands=['share_list'])
-async def share_list(message: types.Message):
-    if db.db_check_existence(message):
-        dict_of_lists = db.db_recourse(message)
-        list_of_titles = list(dict_of_lists.keys())
-        if list_of_titles:
-            keyboard = keyboards.share_inline_lists_kb(list_of_titles)
-            await message.answer('Выбери список, которым хочешь поделиться:', reply_markup=keyboard)
+            if command == 'Добавить продукты':
+                keyboard = keyboards.manage_inline_lists_kb(list_of_titles, 'add_to_list')
+                await message.answer('В какой список занести продукты?', reply_markup=keyboard)
+            elif command == 'Показать списки':
+                keyboard = keyboards.get_inline_lists_kb(list_of_titles, message)
+                await message.answer('Ниже перечень всех твоих списков.\nДля просмотра нажми на нужный.',
+                                     reply_markup=keyboard)
+            elif command == 'Удалить список':
+                keyboard = keyboards.manage_inline_lists_kb(list_of_titles, 'delete_list')
+                await message.answer('Выбери список, который мне нужно удалить:', reply_markup=keyboard)
+            elif command == 'Поделиться списком':
+                keyboard = keyboards.manage_inline_lists_kb(list_of_titles, 'share_list')
+                await message.answer('Выбери список, которым хочешь поделиться:', reply_markup=keyboard)
         else:
             await message.answer("🫧 Извини, но у тебя еще нет ни одного списка. Сначала необходимо создать хотя бы "
                                  "один.")
@@ -139,15 +104,15 @@ async def share_list(message: types.Message):
 async def bot_answer(message: types.Message):
     if message.chat.type == 'private':
         if message.text == 'Показать списки':
-            await show_lists_of_products(message)
+            await manage_lists(message)
         elif message.text == 'Добавить список':
             await add_list(message)
         elif message.text == 'Добавить продукты':
-            await add_product(message)
+            await manage_lists(message)
         elif message.text == 'Удалить список':
-            await delete_full_list(message)
+            await manage_lists(message)
         elif message.text == 'Поделиться списком':
-            await share_list(message)
+            await manage_lists(message)
         else:
             await message.answer('Извини, я не знаю такой команды 🗿'
                                  '\nДля общения со мной можешь использовать кнопки или напиши /help, там небольшое '
