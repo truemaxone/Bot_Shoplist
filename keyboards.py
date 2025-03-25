@@ -53,7 +53,6 @@ def get_inline_lists_kb(list_of_titles, message):
 def manage_inline_lists_kb(list_of_titles, callback_data):
     keyboard = types.InlineKeyboardMarkup(row_width=1)
     btns = []
-    print(callback_data)
     for list_id, lst in enumerate(list_of_titles):
         if callback_data == 'delete_list':
             text = f'🗑 {lst}'
